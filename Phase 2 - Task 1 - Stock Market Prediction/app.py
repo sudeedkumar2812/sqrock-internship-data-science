@@ -1,23 +1,23 @@
 # ============================================================
-# STOCK MARKET PREDICTION SYSTEM
+# LOAN APPROVAL PREDICTION SYSTEM
 # Data Science Internship - Phase 2
 # ============================================================
 
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import joblib
 from pathlib import Path
+import matplotlib.pyplot as plt
+
 
 # ============================================================
 # FILE PATH CONFIGURATION
 # ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_DIR = BASE_DIR / "models"
 DATA_DIR = BASE_DIR / "data"
+MODEL_DIR = BASE_DIR / "models"
 
 
 # ============================================================
@@ -25,67 +25,76 @@ DATA_DIR = BASE_DIR / "data"
 # ============================================================
 
 st.set_page_config(
-    page_title="Stock Market Prediction System",
-    page_icon="📈",
+    page_title="Loan Approval Prediction System",
+    page_icon="🏦",
     layout="wide"
 )
 
 
 # ============================================================
-# LOAD DATA AND MODEL
+# LOAD DATA
 # ============================================================
 
 @st.cache_data
-def load_stock_data():
+def load_data():
 
     data = pd.read_csv(
-        DATA_DIR / "AAPL_historical_stock_data.csv"
+        DATA_DIR / "cleaned_loan_approval_dataset.csv"
     )
-
-    data["Date"] = pd.to_datetime(data["Date"])
-
-    # Moving averages
-    data["MA20"] = data["Close"].rolling(20).mean()
-    data["MA50"] = data["Close"].rolling(50).mean()
-    data["MA200"] = data["Close"].rolling(200).mean()
 
     return data
 
+
+# ============================================================
+# LOAD MODEL
+# ============================================================
 
 @st.cache_resource
 def load_model():
 
     model = joblib.load(
-        MODEL_DIR / "linear_regression_stock_model.pkl"
-    )
-
-    scaler = joblib.load(
-        MODEL_DIR / "stock_feature_scaler.pkl"
+        MODEL_DIR / "loan_approval_model.pkl"
     )
 
     features = joblib.load(
-        MODEL_DIR / "stock_feature_columns.pkl"
+        MODEL_DIR / "feature_columns.pkl"
     )
 
-    return model, scaler, features
+    return model, features
 
 
-stock_data = load_stock_data()
-model, scaler, features = load_model()
+# ============================================================
+# LOAD MODEL PERFORMANCE
+# ============================================================
+
+@st.cache_data
+def load_performance():
+
+    performance = pd.read_csv(
+        MODEL_DIR / "model_performance.csv"
+    )
+
+    return performance
+
+
+data = load_data()
+model, features = load_model()
+performance = load_performance()
 
 
 # ============================================================
 # SIDEBAR
 # ============================================================
 
-st.sidebar.title("📈 Stock Market Predictor")
+st.sidebar.title("🏦 Loan Approval Predictor")
 
 st.sidebar.markdown(
     """
     ### Navigation
 
-    Use the sections below to explore the stock market data,
-    analyze historical trends, and generate predictions.
+    Explore loan application analytics,
+    generate loan approval predictions,
+    and compare machine learning models.
     """
 )
 
@@ -93,7 +102,7 @@ selected_section = st.sidebar.radio(
     "Select Section",
     [
         "Overview",
-        "Market Analysis",
+        "Loan Analysis",
         "Prediction",
         "Model Performance"
     ]
@@ -104,17 +113,18 @@ selected_section = st.sidebar.radio(
 # HEADER
 # ============================================================
 
-st.title("📈 Stock Market Prediction System")
+st.title("🏦 Loan Approval Prediction System")
 
 st.markdown(
     """
-    ### AAPL Stock Analysis & Next-Day Price Prediction
+    ### Financial Analysis & Loan Approval Prediction
 
-    This application analyzes historical stock market data
-    and uses Machine Learning to predict the next trading
-    day's closing price.
+    This application analyzes applicant information
+    and uses Machine Learning classification models
+    to predict whether a loan application is likely
+    to be **Approved** or **Rejected**.
 
-    **Model Used:** Linear Regression
+    **Best Model:** Machine Learning Classification
     """
 )
 
@@ -127,148 +137,263 @@ st.divider()
 
 if selected_section == "Overview":
 
-    st.subheader("📊 Market Overview")
+    st.subheader("📊 Loan Application Overview")
 
-    latest = stock_data.iloc[-1]
+    total_applications = len(data)
+
+    approved_count = (
+        data["Loan_Status"]
+        .eq("Approved")
+        .sum()
+    )
+
+    rejected_count = (
+        data["Loan_Status"]
+        .eq("Rejected")
+        .sum()
+    )
+
+    approval_rate = (
+        approved_count /
+        total_applications
+    ) * 100
 
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
+
         st.metric(
-            "Latest Close",
-            f"${latest['Close']:.2f}"
+            "Total Applications",
+            f"{total_applications:,}"
         )
 
     with col2:
+
         st.metric(
-            "Day High",
-            f"${latest['High']:.2f}"
+            "Approved",
+            f"{approved_count:,}"
         )
 
     with col3:
+
         st.metric(
-            "Day Low",
-            f"${latest['Low']:.2f}"
+            "Rejected",
+            f"{rejected_count:,}"
         )
 
     with col4:
+
         st.metric(
-            "Trading Volume",
-            f"{latest['Volume']:,.0f}"
+            "Approval Rate",
+            f"{approval_rate:.2f}%"
         )
 
-    st.subheader("Historical Closing Price")
+    # --------------------------------------------------------
+    # Approval distribution
+    # --------------------------------------------------------
 
-    fig, ax = plt.subplots(figsize=(12, 5))
+    st.subheader("Loan Approval Distribution")
 
-    ax.plot(
-        stock_data["Date"],
-        stock_data["Close"]
+    status_counts = (
+        data["Loan_Status"]
+        .value_counts()
     )
 
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Closing Price ($)")
-    ax.set_title("AAPL Historical Closing Price")
+    fig, ax = plt.subplots(
+        figsize=(8, 5)
+    )
 
-    plt.xticks(rotation=45)
+    ax.bar(
+        status_counts.index,
+        status_counts.values
+    )
+
+    ax.set_title(
+        "Loan Approval Distribution"
+    )
+
+    ax.set_xlabel(
+        "Loan Status"
+    )
+
+    ax.set_ylabel(
+        "Number of Applications"
+    )
+
     plt.tight_layout()
 
     st.pyplot(fig)
+
+    # --------------------------------------------------------
+    # Dataset information
+    # --------------------------------------------------------
 
     st.subheader("Dataset Information")
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
+
         st.write(
-            f"**Records:** {len(stock_data):,}"
+            f"**Records:** {len(data):,}"
         )
 
     with col2:
+
         st.write(
-            f"**Date Range:** "
-            f"{stock_data['Date'].min().date()} "
-            f"to "
-            f"{stock_data['Date'].max().date()}"
+            f"**Model Features:** {len(features)}"
+        )
+
+    with col3:
+
+        st.write(
+            "**Target:** Loan_Status"
         )
 
 
 # ============================================================
-# MARKET ANALYSIS
+# LOAN ANALYSIS
 # ============================================================
 
-elif selected_section == "Market Analysis":
+elif selected_section == "Loan Analysis":
 
-    st.subheader("📊 Market Analysis")
+    st.subheader("📊 Loan Application Analysis")
 
-    # Price chart
-    st.markdown("### Price Trend")
+    # --------------------------------------------------------
+    # Applicant Income
+    # --------------------------------------------------------
 
-    fig, ax = plt.subplots(figsize=(12, 5))
-
-    ax.plot(
-        stock_data["Date"],
-        stock_data["Close"],
-        label="Close"
+    st.markdown(
+        "### Applicant Income Distribution"
     )
 
-    ax.plot(
-        stock_data["Date"],
-        stock_data["MA20"],
-        label="20-Day MA"
+    fig, ax = plt.subplots(
+        figsize=(12, 5)
     )
 
-    ax.plot(
-        stock_data["Date"],
-        stock_data["MA50"],
-        label="50-Day MA"
+    ax.hist(
+        data["Applicant_Income"].dropna(),
+        bins=30
     )
 
-    ax.plot(
-        stock_data["Date"],
-        stock_data["MA200"],
-        label="200-Day MA"
+    ax.set_title(
+        "Applicant Income Distribution"
     )
 
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Price ($)")
-    ax.set_title("AAPL Price and Moving Averages")
+    ax.set_xlabel(
+        "Applicant Income"
+    )
 
-    ax.legend()
+    ax.set_ylabel(
+        "Number of Applicants"
+    )
 
-    plt.xticks(rotation=45)
     plt.tight_layout()
 
     st.pyplot(fig)
 
-    # Volume
-    st.markdown("### Trading Volume")
+    # --------------------------------------------------------
+    # Loan Amount
+    # --------------------------------------------------------
 
-    fig, ax = plt.subplots(figsize=(12, 4))
-
-    ax.plot(
-        stock_data["Date"],
-        stock_data["Volume"]
+    st.markdown(
+        "### Loan Amount Distribution"
     )
 
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Volume")
-    ax.set_title("AAPL Trading Volume")
+    fig, ax = plt.subplots(
+        figsize=(12, 5)
+    )
 
-    plt.xticks(rotation=45)
+    ax.hist(
+        data["Loan_Amount"].dropna(),
+        bins=30
+    )
+
+    ax.set_title(
+        "Loan Amount Distribution"
+    )
+
+    ax.set_xlabel(
+        "Loan Amount"
+    )
+
+    ax.set_ylabel(
+        "Number of Applications"
+    )
+
     plt.tight_layout()
 
     st.pyplot(fig)
 
-    # Statistics
-    st.markdown("### Market Statistics")
+    # --------------------------------------------------------
+    # Credit History
+    # --------------------------------------------------------
 
-    statistics = stock_data[
-        ["Open", "High", "Low", "Close", "Volume"]
-    ].describe()
+    st.markdown(
+        "### Credit History vs Loan Approval"
+    )
+
+    credit_table = pd.crosstab(
+        data["Credit_History"],
+        data["Loan_Status"]
+    )
 
     st.dataframe(
-        statistics,
+        credit_table,
+        use_container_width=True
+    )
+
+    # --------------------------------------------------------
+    # Education
+    # --------------------------------------------------------
+
+    st.markdown(
+        "### Education vs Loan Approval"
+    )
+
+    education_table = pd.crosstab(
+        data["Education"],
+        data["Loan_Status"]
+    )
+
+    st.dataframe(
+        education_table,
+        use_container_width=True
+    )
+
+    # --------------------------------------------------------
+    # Property Area
+    # --------------------------------------------------------
+
+    st.markdown(
+        "### Property Area vs Loan Approval"
+    )
+
+    property_table = pd.crosstab(
+        data["Property_Area"],
+        data["Loan_Status"]
+    )
+
+    st.dataframe(
+        property_table,
+        use_container_width=True
+    )
+
+    # --------------------------------------------------------
+    # Employment Status
+    # --------------------------------------------------------
+
+    st.markdown(
+        "### Employment Status vs Loan Approval"
+    )
+
+    employment_table = pd.crosstab(
+        data["Employment_Status"],
+        data["Loan_Status"]
+    )
+
+    st.dataframe(
+        employment_table,
         use_container_width=True
     )
 
@@ -279,108 +404,326 @@ elif selected_section == "Market Analysis":
 
 elif selected_section == "Prediction":
 
-    st.subheader("🤖 Next-Day Stock Price Prediction")
+    st.subheader(
+        "🤖 Loan Approval Prediction"
+    )
 
     st.info(
-        "The model predicts the next trading day's "
-        "closing price using the latest available "
-        "market information."
+        "Enter applicant information below to "
+        "generate a loan approval prediction."
     )
-
-    latest = stock_data.iloc[-1]
-
-    prediction_features = pd.DataFrame(
-        [[
-            latest["Open"],
-            latest["High"],
-            latest["Low"],
-            latest["Close"],
-            latest["Volume"],
-            latest["MA20"],
-            latest["MA50"],
-            latest["MA200"]
-        ]],
-        columns=features
-    )
-
-    scaled_features = scaler.transform(
-        prediction_features
-    )
-
-    prediction = model.predict(
-        scaled_features
-    )[0]
 
     col1, col2 = st.columns(2)
 
-    with col1:
-        st.metric(
-            "Latest Closing Price",
-            f"${latest['Close']:.2f}"
-        )
-
-    with col2:
-        st.metric(
-            "Predicted Next-Day Close",
-            f"${prediction:.2f}"
-        )
-
-    price_difference = prediction - latest["Close"]
-
-    percentage_change = (
-        price_difference /
-        latest["Close"]
-    ) * 100
-
-    st.subheader("Prediction Analysis")
-
-    col1, col2 = st.columns(2)
+    # ========================================================
+    # LEFT COLUMN
+    # ========================================================
 
     with col1:
-        st.metric(
-            "Predicted Price Change",
-            f"${price_difference:.2f}"
+
+        gender = st.selectbox(
+            "Gender",
+            data["Gender"]
+            .dropna()
+            .unique()
+            .tolist()
         )
+
+        married = st.selectbox(
+            "Marital Status",
+            data["Married"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
+
+        dependents = st.number_input(
+            "Dependents",
+            min_value=0.0,
+            max_value=float(
+                data["Dependents"].max()
+            ),
+            value=0.0,
+            step=1.0
+        )
+
+        education = st.selectbox(
+            "Education",
+            data["Education"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
+
+        employment_status = st.selectbox(
+            "Employment Status",
+            data["Employment_Status"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
+
+        property_area = st.selectbox(
+            "Property Area",
+            data["Property_Area"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
+
+        credit_history = st.selectbox(
+            "Credit History",
+            sorted(
+                data["Credit_History"]
+                .dropna()
+                .unique()
+                .tolist()
+            )
+        )
+
+    # ========================================================
+    # RIGHT COLUMN
+    # ========================================================
 
     with col2:
-        st.metric(
-            "Predicted Change %",
-            f"{percentage_change:.2f}%"
+
+        age = st.number_input(
+            "Age",
+            min_value=int(
+                data["Age"].min()
+            ),
+            max_value=int(
+                data["Age"].max()
+            ),
+            value=int(
+                data["Age"].median()
+            ),
+            step=1
         )
 
-    st.subheader("Recent Price Trend")
+        applicant_income = st.number_input(
+            "Applicant Income",
+            min_value=0.0,
+            value=float(
+                data["Applicant_Income"].median()
+            ),
+            step=1000.0
+        )
 
-    recent_data = stock_data.tail(100)
+        coapplicant_income = st.number_input(
+            "Coapplicant Income",
+            min_value=0.0,
+            value=float(
+                data["Coapplicant_Income"].median()
+            ),
+            step=1000.0
+        )
 
-    fig, ax = plt.subplots(figsize=(12, 5))
+        loan_amount = st.number_input(
+            "Loan Amount",
+            min_value=0.0,
+            value=float(
+                data["Loan_Amount"].median()
+            ),
+            step=1000.0
+        )
 
-    ax.plot(
-        recent_data["Date"],
-        recent_data["Close"],
-        label="Historical Close"
+        loan_term = st.number_input(
+            "Loan Term (Months)",
+            min_value=1.0,
+            value=float(
+                data["Loan_Term"].median()
+            ),
+            step=12.0
+        )
+
+
+    # ========================================================
+    # FEATURE ENGINEERING
+    # ========================================================
+
+    total_income = (
+        applicant_income +
+        coapplicant_income
     )
 
-    ax.scatter(
-        stock_data["Date"].iloc[-1],
-        prediction,
-        label="Predicted Next-Day Price",
-        s=100
-    )
+    if total_income > 0:
 
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Price ($)")
-    ax.set_title("Recent AAPL Price Trend and Prediction")
+        loan_to_income_ratio = (
+            loan_amount /
+            total_income
+        )
 
-    ax.legend()
+    else:
 
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+        loan_to_income_ratio = 0
 
-    st.pyplot(fig)
+
+    # ========================================================
+    # CREATE INPUT DATA
+    # ========================================================
+
+    input_data = pd.DataFrame({
+
+        "Gender": [gender],
+
+        "Married": [married],
+
+        "Dependents": [dependents],
+
+        "Education": [education],
+
+        "Employment_Status": [
+            employment_status
+        ],
+
+        "Applicant_Income": [
+            applicant_income
+        ],
+
+        "Coapplicant_Income": [
+            coapplicant_income
+        ],
+
+        "Loan_Amount": [
+            loan_amount
+        ],
+
+        "Loan_Term": [
+            loan_term
+        ],
+
+        "Credit_History": [
+            credit_history
+        ],
+
+        "Property_Area": [
+            property_area
+        ],
+
+        "Age": [
+            age
+        ],
+
+        "Total_Income": [
+            total_income
+        ],
+
+        "Loan_to_Income_Ratio": [
+            loan_to_income_ratio
+        ]
+    })
+
+
+    # ========================================================
+    # ENSURE MODEL FEATURE ORDER
+    # ========================================================
+
+    input_data = input_data[
+        features
+    ]
+
+
+    # ========================================================
+    # PREDICTION BUTTON
+    # ========================================================
+
+    if st.button(
+        "🔍 Predict Loan Approval",
+        use_container_width=True
+    ):
+
+        prediction = model.predict(
+            input_data
+        )[0]
+
+        st.divider()
+
+        if prediction == "Approved":
+
+            st.success(
+                "✅ Loan Application Likely Approved"
+            )
+
+        else:
+
+            st.error(
+                "❌ Loan Application Likely Rejected"
+            )
+
+
+        # ====================================================
+        # PROBABILITY
+        # ====================================================
+
+        if hasattr(
+            model,
+            "predict_proba"
+        ):
+
+            probabilities = (
+                model.predict_proba(
+                    input_data
+                )[0]
+            )
+
+            classes = model.classes_
+
+            probability_df = pd.DataFrame({
+
+                "Loan Status": classes,
+
+                "Probability": probabilities
+            })
+
+            probability_df[
+                "Probability"
+            ] = (
+                probability_df[
+                    "Probability"
+                ] * 100
+            )
+
+            probability_df[
+                "Probability"
+            ] = probability_df[
+                "Probability"
+            ].round(2)
+
+            st.subheader(
+                "Prediction Probability"
+            )
+
+            st.dataframe(
+                probability_df,
+                use_container_width=True
+            )
+
+            approved_rows = (
+                probability_df[
+                    probability_df[
+                        "Loan Status"
+                    ] == "Approved"
+                ]
+            )
+
+            if not approved_rows.empty:
+
+                approval_probability = (
+                    approved_rows[
+                        "Probability"
+                    ].iloc[0]
+                )
+
+                st.metric(
+                    "Approval Probability",
+                    f"{approval_probability:.2f}%"
+                )
+
 
     st.warning(
-        "This prediction is for educational purposes only "
-        "and should not be considered financial advice."
+        "This prediction is for educational purposes "
+        "only and should not be considered financial advice."
     )
 
 
@@ -390,10 +733,8 @@ elif selected_section == "Prediction":
 
 elif selected_section == "Model Performance":
 
-    st.subheader("📊 Machine Learning Model Performance")
-
-    performance = pd.read_csv(
-        MODEL_DIR / "model_performance.csv"
+    st.subheader(
+        "📊 Machine Learning Model Performance"
     )
 
     st.dataframe(
@@ -401,26 +742,11 @@ elif selected_section == "Model Performance":
         use_container_width=True
     )
 
-    st.markdown(
-        """
-        ### Evaluation Metrics
+    # --------------------------------------------------------
+    # Best model
+    # --------------------------------------------------------
 
-        **MAE:** Mean Absolute Error
-
-        **MSE:** Mean Squared Error
-
-        **RMSE:** Root Mean Squared Error
-
-        **R² Score:** Coefficient of Determination
-
-        The model with the lowest RMSE was selected
-        as the best-performing model.
-        """
-    )
-
-    best_model = performance.loc[
-        performance["RMSE"].idxmin()
-    ]
+    best_model = performance.iloc[0]
 
     st.success(
         f"🏆 Best Model: {best_model['Model']}"
@@ -429,28 +755,46 @@ elif selected_section == "Model Performance":
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
+
         st.metric(
-            "MAE",
-            f"{best_model['MAE']:.4f}"
+            "Accuracy",
+            f"{best_model['Accuracy']:.4f}"
         )
 
     with col2:
+
         st.metric(
-            "MSE",
-            f"{best_model['MSE']:.4f}"
+            "Precision",
+            f"{best_model['Precision']:.4f}"
         )
 
     with col3:
+
         st.metric(
-            "RMSE",
-            f"{best_model['RMSE']:.4f}"
+            "Recall",
+            f"{best_model['Recall']:.4f}"
         )
 
     with col4:
+
         st.metric(
-            "R² Score",
-            f"{best_model['R2 Score']:.4f}"
+            "F1 Score",
+            f"{best_model['F1 Score']:.4f}"
         )
+
+    st.markdown(
+        """
+        ### Evaluation Metrics
+
+        **Accuracy:** Overall percentage of correct predictions.
+
+        **Precision:** Measures the correctness of positive predictions.
+
+        **Recall:** Measures how many actual positive cases are identified.
+
+        **F1 Score:** Harmonic balance between precision and recall.
+        """
+    )
 
 
 # ============================================================
@@ -460,7 +804,7 @@ elif selected_section == "Model Performance":
 st.divider()
 
 st.caption(
-    "Stock Market Prediction System | "
+    "Loan Approval Prediction System | "
     "Data Science Internship – Phase 2 | "
     "Educational Project"
 )

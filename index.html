@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Market Prediction System</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f5f7fb;color:#172033}
+header{background:linear-gradient(135deg,#172554,#2563eb);color:#fff;padding:42px 7%}
+header h1{margin:0 0 8px;font-size:34px}header p{margin:0;font-size:17px;opacity:.92}
+main{width:86%;max-width:1250px;margin:28px auto 50px}
+nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+nav button{border:0;background:#fff;padding:11px 18px;border-radius:10px;cursor:pointer;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+nav button.active{background:#2563eb;color:#fff}
+section{display:none}section.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card,.panel{background:#fff;border-radius:14px;padding:20px;box-shadow:0 3px 14px rgba(0,0,0,.07)}
+.panel{margin-top:20px}.label{color:#64748b;font-size:14px;margin-bottom:8px}.value{font-size:25px;font-weight:700}
+.chart{width:100%;height:450px}
+table{width:100%;border-collapse:collapse}th,td{padding:12px;border-bottom:1px solid #e5e7eb;text-align:left}th{background:#f8fafc}
+.pred{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.notice{margin-top:18px;padding:15px;background:#fff7ed;border-left:4px solid #f97316;border-radius:8px}
+.footer{text-align:center;color:#64748b;margin-top:35px;font-size:14px}
+#loading{background:#fff;padding:18px;border-radius:12px;margin-bottom:18px}
+@media(max-width:800px){.cards,.pred{grid-template-columns:1fr 1fr}}
+@media(max-width:550px){.cards,.pred{grid-template-columns:1fr}main{width:92%}}
+</style>
+</head>
+<body>
+<header>
+<h1>📈 Stock Market Prediction System</h1>
+<p>AAPL Stock Analysis &amp; Next-Day Price Prediction</p>
+</header>
+
+<main>
+<nav>
+<button class="active" onclick="showSection('overview',this)">Overview</button>
+<button onclick="showSection('analysis',this)">Market Analysis</button>
+<button onclick="showSection('prediction',this)">Prediction</button>
+<button onclick="showSection('performance',this)">Model Performance</button>
+</nav>
+
+<div id="loading">Loading AAPL historical data…</div>
+
+<section id="overview" class="active">
+<div class="cards">
+<div class="card"><div class="label">Latest Close</div><div class="value">$271.86</div></div>
+<div class="card"><div class="label">Day High</div><div class="value">$273.68</div></div>
+<div class="card"><div class="label">Day Low</div><div class="value">$271.75</div></div>
+<div class="card"><div class="label">Trading Volume</div><div class="value">27.29M</div></div>
+</div>
+<div class="panel"><h2>Historical Closing Price</h2><div id="overviewChart" class="chart"></div></div>
+<div class="panel">
+<h2>Dataset Information</h2>
+<p><b>Records:</b> 2,011</p>
+<p><b>Date Range:</b> 2018-01-02 to 2025-12-31</p>
+<p><b>Data Source:</b> Yahoo Finance via yfinance</p>
+</div>
+</section>
+
+<section id="analysis">
+<div class="panel"><h2>Price Trend &amp; Moving Averages</h2><div id="priceChart" class="chart"></div></div>
+<div class="panel"><h2>Trading Volume</h2><div id="volumeChart" class="chart"></div></div>
+<div class="panel">
+<h2>Market Statistics</h2>
+<table>
+<thead><tr><th>Metric</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th></tr></thead>
+<tbody id="statsBody"></tbody>
+</table>
+</div>
+</section>
+
+<section id="prediction">
+<div class="pred">
+<div class="card"><div class="label">Latest Closing Price</div><div class="value">$271.86</div></div>
+<div class="card"><div class="label">Predicted Next-Day Close</div><div class="value">$272.13</div></div>
+<div class="card"><div class="label">Predicted Change</div><div class="value">+$0.27 (0.10%)</div></div>
+</div>
+<div class="panel"><h2>Recent Price Trend &amp; Prediction</h2><div id="predictionChart" class="chart"></div></div>
+<div class="notice"><b>Disclaimer:</b> This prediction is for educational purposes only and should not be considered financial advice.</div>
+</section>
+
+<section id="performance">
+<div class="panel">
+<h2>Machine Learning Model Performance</h2>
+<table>
+<thead><tr><th>Model</th><th>MAE</th><th>MSE</th><th>RMSE</th><th>R² Score</th></tr></thead>
+<tbody>
+<tr><td>Linear Regression</td><td>2.6682</td><td>15.7442</td><td>3.9679</td><td>0.9697</td></tr>
+<tr><td>Decision Tree</td><td>16.2692</td><td>504.7000</td><td>22.4655</td><td>0.0282</td></tr>
+<tr><td>Random Forest</td><td>12.5168</td><td>353.4300</td><td>18.7997</td><td>0.3195</td></tr>
+</tbody>
+</table>
+<p><b>🏆 Best Model:</b> Linear Regression</p>
+<p>The model with the lowest RMSE was selected as the best-performing model.</p>
+</div>
+</section>
+
+<div class="footer">Stock Market Prediction System | Data Science Internship – Phase 2 | Educational Project</div>
+</main>
+
+<script>
+let data=[];
+
+function showSection(id,btn){
+document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+}
+
+function movingAverage(values,n){
+return values.map((_,i)=>{
+if(i<n-1)return null;
+let sum=0;
+for(let j=i-n+1;j<=i;j++)sum+=values[j];
+return sum/n;
+});
+}
+
+function addPlot(id,traces,title,yTitle,extra={}){
+Plotly.newPlot(id,traces,{
+margin:{t:35,r:20,l:60,b:55},
+title:title,
+hovermode:'x unified',
+xaxis:{title:'Date'},
+yaxis:{title:yTitle},
+...extra
+},{responsive:true});
+}
+
+function drawCharts(){
+const dates=data.map(r=>r.Date);
+const close=data.map(r=>Number(r.Close));
+const volume=data.map(r=>Number(r.Volume));
+const ma20=movingAverage(close,20);
+const ma50=movingAverage(close,50);
+const ma200=movingAverage(close,200);
+
+addPlot('overviewChart',
+[{x:dates,y:close,mode:'lines',name:'Close'}],
+'AAPL Historical Closing Price','Closing Price ($)');
+
+addPlot('priceChart',[
+{x:dates,y:close,mode:'lines',name:'Close'},
+{x:dates,y:ma20,mode:'lines',name:'20-Day MA'},
+{x:dates,y:ma50,mode:'lines',name:'50-Day MA'},
+{x:dates,y:ma200,mode:'lines',name:'200-Day MA'}
+],
+'AAPL Price and Moving Averages','Price ($)');
+
+addPlot('volumeChart',
+[{x:dates,y:volume,type:'bar',name:'Volume'}],
+'AAPL Trading Volume','Volume');
+
+const recent=data.slice(-100);
+addPlot('predictionChart',[
+{x:recent.map(r=>r.Date),y:recent.map(r=>Number(r.Close)),mode:'lines',name:'Historical Close'},
+{x:[dates[dates.length-1]],y:[272.13],mode:'markers',marker:{size:12},name:'Predicted Next-Day Price'}
+],
+'Recent AAPL Price Trend and Prediction','Price ($)');
+}
+
+function buildStats(){
+const cols=['Open','High','Low','Close','Volume'];
+const mean=c=>data.reduce((a,r)=>a+Number(r[c]),0)/data.length;
+const min=c=>Math.min(...data.map(r=>Number(r[c])));
+const max=c=>Math.max(...data.map(r=>Number(r[c])));
+const rows=[
+['Count',...cols.map(()=>data.length)],
+['Mean',...cols.map(mean)],
+['Minimum',...cols.map(min)],
+['Maximum',...cols.map(max)]
+];
+document.getElementById('statsBody').innerHTML=rows.map(row=>
+'<tr>'+row.map((v,i)=>'<td>'+ (i===0?v:Number(v).toLocaleString(undefined,{maximumFractionDigits:2})) +'</td>').join('')+'</tr>'
+).join('');
+}
+
+/* The CSV lives inside the Phase 2 project folder in this same repository. */
+const csvPath='Phase%202%20-%20Task%201%20-%20Stock%20Market%20Prediction/data/AAPL_historical_stock_data.csv';
+
+fetch(csvPath)
+.then(r=>{
+if(!r.ok)throw new Error('CSV could not be loaded');
+return r.text();
+})
+.then(text=>{
+const lines=text.trim().split(/\r?\n/);
+const headers=lines[0].split(',');
+data=lines.slice(1).map(line=>{
+const vals=line.split(',');
+const obj={};
+headers.forEach((h,i)=>obj[h]=vals[i]);
+return obj;
+}).filter(r=>r.Date&&r.Close);
+document.getElementById('loading').style.display='none';
+drawCharts();
+buildStats();
+})
+.catch(err=>{
+document.getElementById('loading').textContent=
+'Unable to load the stock dataset from GitHub Pages. Check that the CSV is present in the Phase 2 project folder.';
+console.error(err);
+});
+</script>
+</body>
+</html>

@@ -1,239 +1,234 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Loan Approval Prediction System</title>
+<title>Loan Approval Prediction System</title>
 
-    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.3/papaparse.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                         Arial, sans-serif;
-            background: #f4f7fb;
-            color: #172033;
-        }
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: #f4f7fb;
+    color: #172033;
+}
 
-        .header {
-            background: linear-gradient(135deg, #172554, #2563eb);
-            color: white;
-            padding: 42px 7%;
-        }
+.header {
+    background: linear-gradient(135deg, #172554, #2563eb);
+    color: white;
+    padding: 42px 7%;
+}
 
-        .header h1 {
-            margin: 0 0 8px;
-            font-size: 34px;
-        }
+.header h1 {
+    margin: 0 0 8px;
+    font-size: 34px;
+}
 
-        .header p {
-            margin: 0;
-            font-size: 17px;
-            opacity: 0.92;
-        }
+.header p {
+    margin: 0;
+    font-size: 17px;
+}
 
-        .container {
-            width: 86%;
-            max-width: 1250px;
-            margin: 28px auto 50px;
-        }
+.container {
+    width: 86%;
+    max-width: 1250px;
+    margin: 28px auto 50px;
+}
 
-        .nav {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-        }
+.nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
 
-        .nav button {
-            border: 0;
-            background: white;
-            padding: 12px 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 700;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        }
+.nav button {
+    border: 0;
+    background: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
 
-        .nav button.active {
-            background: #2563eb;
-            color: white;
-        }
+.nav button.active {
+    background: #2563eb;
+    color: white;
+}
 
-        .section {
-            display: none;
-        }
+.section {
+    display: none;
+}
 
-        .section.active {
-            display: block;
-        }
+.section.active {
+    display: block;
+}
 
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
 
-        .card,
-        .panel {
-            background: white;
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.07);
-        }
+.card,
+.panel {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 3px 14px rgba(0,0,0,.07);
+}
 
-        .panel {
-            margin-top: 20px;
-        }
+.panel {
+    margin-top: 20px;
+}
 
-        .label {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
+.label {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
 
-        .value {
-            font-size: 25px;
-            font-weight: 700;
-        }
+.value {
+    font-size: 25px;
+    font-weight: 700;
+}
 
-        .chart {
-            width: 100%;
-            height: 430px;
-        }
+.chart {
+    width: 100%;
+    height: 420px;
+}
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
-        th,
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
-        }
+th,
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+}
 
-        th {
-            background: #f8fafc;
-        }
+th {
+    background: #f8fafc;
+}
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-        }
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-        }
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
 
-        .form-group label {
-            font-weight: 600;
-        }
+.form-group label {
+    font-weight: 600;
+}
 
-        .form-group input,
-        .form-group select {
-            padding: 11px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 15px;
-            background: white;
-        }
+.form-group input,
+.form-group select {
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px;
+}
 
-        .predict-button {
-            margin-top: 20px;
-            width: 100%;
-            padding: 14px;
-            border: 0;
-            border-radius: 10px;
-            background: #2563eb;
-            color: white;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-        }
+.predict-button {
+    margin-top: 22px;
+    width: 100%;
+    padding: 14px;
+    border: 0;
+    border-radius: 10px;
+    background: #2563eb;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+}
 
-        .result {
-            margin-top: 22px;
-            padding: 18px;
-            border-radius: 10px;
-            display: none;
-        }
+.result {
+    margin-top: 22px;
+    padding: 18px;
+    border-radius: 10px;
+    display: none;
+}
 
-        .approved {
-            background: #ecfdf5;
-            border-left: 5px solid #10b981;
-        }
+.approved {
+    background: #ecfdf5;
+    border-left: 5px solid #10b981;
+}
 
-        .rejected {
-            background: #fef2f2;
-            border-left: 5px solid #ef4444;
-        }
+.rejected {
+    background: #fef2f2;
+    border-left: 5px solid #ef4444;
+}
 
-        .info-box {
-            margin-top: 18px;
-            padding: 15px;
-            background: #eff6ff;
-            border-left: 4px solid #2563eb;
-            border-radius: 8px;
-        }
+.info-box {
+    margin-top: 18px;
+    padding: 15px;
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
+    border-radius: 8px;
+}
 
-        .warning {
-            margin-top: 18px;
-            padding: 15px;
-            background: #fff7ed;
-            border-left: 4px solid #f97316;
-            border-radius: 8px;
-        }
+.warning {
+    margin-top: 18px;
+    padding: 15px;
+    background: #fff7ed;
+    border-left: 4px solid #f97316;
+    border-radius: 8px;
+}
 
-        .footer {
-            text-align: center;
-            color: #64748b;
-            margin-top: 35px;
-            font-size: 14px;
-        }
+.footer {
+    text-align: center;
+    color: #64748b;
+    margin-top: 35px;
+    font-size: 14px;
+}
 
-        @media (max-width: 850px) {
-            .cards {
-                grid-template-columns: 1fr 1fr;
-            }
+@media (max-width: 850px) {
+    .cards,
+    .grid-2,
+    .form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
 
-            .grid-2,
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+@media (max-width: 550px) {
+    .cards,
+    .grid-2,
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
 
-        @media (max-width: 550px) {
-            .cards {
-                grid-template-columns: 1fr;
-            }
+    .container {
+        width: 92%;
+    }
 
-            .container {
-                width: 92%;
-            }
-
-            .header h1 {
-                font-size: 27px;
-            }
-        }
-    </style>
+    .header h1 {
+        font-size: 27px;
+    }
+}
+</style>
 </head>
 
 <body>
@@ -245,546 +240,678 @@
 
 <main class="container">
 
-    <div class="nav">
-        <button class="active"
-                onclick="showSection('overview', this)">
-            Overview
-        </button>
+<div class="nav">
 
-        <button onclick="showSection('analysis', this)">
-            Loan Analysis
-        </button>
+<button class="active"
+        onclick="showSection('overview', this)">
+    Overview
+</button>
 
-        <button onclick="showSection('prediction', this)">
-            Prediction
-        </button>
+<button onclick="showSection('analysis', this)">
+    Loan Analysis
+</button>
 
-        <button onclick="showSection('performance', this)">
-            Model Performance
-        </button>
-    </div>
+<button onclick="showSection('prediction', this)">
+    Prediction
+</button>
 
-    <!-- ====================================================== -->
-    <!-- OVERVIEW -->
-    <!-- ====================================================== -->
+<button onclick="showSection('performance', this)">
+    Model Performance
+</button>
 
-    <section id="overview" class="section active">
+</div>
 
-        <div class="cards">
 
-            <div class="card">
-                <div class="label">Total Applications</div>
-                <div class="value">3,192</div>
-            </div>
+<!-- ===================================================== -->
+<!-- OVERVIEW -->
+<!-- ===================================================== -->
 
-            <div class="card">
-                <div class="label">Approved</div>
-                <div class="value">1,596</div>
-            </div>
+<section id="overview" class="section active">
 
-            <div class="card">
-                <div class="label">Rejected</div>
-                <div class="value">1,596</div>
-            </div>
+<div class="cards">
 
-            <div class="card">
-                <div class="label">Approval Rate</div>
-                <div class="value">50.00%</div>
-            </div>
+<div class="card">
+<div class="label">Total Applications</div>
+<div class="value">3,192</div>
+</div>
 
-        </div>
+<div class="card">
+<div class="label">Approved</div>
+<div class="value">1,596</div>
+</div>
 
-        <div class="panel">
-            <h2>Loan Approval Distribution</h2>
-            <div id="approvalChart" class="chart"></div>
-        </div>
+<div class="card">
+<div class="label">Rejected</div>
+<div class="value">1,596</div>
+</div>
 
-        <div class="panel">
-            <h2>Dataset Information</h2>
+<div class="card">
+<div class="label">Approval Rate</div>
+<div class="value">50.00%</div>
+</div>
 
-            <p>
-                <strong>Records:</strong> 3,192
-            </p>
+</div>
 
-            <p>
-                <strong>Features:</strong> 13 applicant/model input fields
-            </p>
 
-            <p>
-                <strong>Target Variable:</strong> Loan_Status
-            </p>
+<div class="panel">
 
-            <p>
-                <strong>Classes:</strong> Approved and Rejected
-            </p>
+<h2>Loan Approval Distribution</h2>
 
-            <p>
-                <strong>Data Source:</strong> Loan application dataset
-            </p>
-        </div>
+<div id="approvalChart"
+     class="chart">
+</div>
 
-    </section>
+</div>
 
 
-    <!-- ====================================================== -->
-    <!-- LOAN ANALYSIS -->
-    <!-- ====================================================== -->
+<div class="panel">
 
-    <section id="analysis" class="section">
+<h2>Dataset Information</h2>
 
-        <div class="grid-2">
+<p>
+<strong>Records:</strong> 3,192
+</p>
 
-            <div class="panel">
-                <h2>Applicant Income Distribution</h2>
-                <div id="incomeChart" class="chart"></div>
-            </div>
+<p>
+<strong>Features:</strong> 13 applicant/model input fields
+</p>
 
-            <div class="panel">
-                <h2>Loan Amount Distribution</h2>
-                <div id="loanChart" class="chart"></div>
-            </div>
+<p>
+<strong>Target Variable:</strong> Loan_Status
+</p>
 
-        </div>
+<p>
+<strong>Classes:</strong> Approved and Rejected
+</p>
 
+</div>
 
-        <div class="panel">
+</section>
 
-            <h2>Credit History vs Loan Approval</h2>
 
-            <table>
 
-                <thead>
-                    <tr>
-                        <th>Credit History</th>
-                        <th>Approved</th>
-                        <th>Rejected</th>
-                    </tr>
-                </thead>
+<!-- ===================================================== -->
+<!-- ANALYSIS -->
+<!-- ===================================================== -->
 
-                <tbody id="creditTable"></tbody>
+<section id="analysis" class="section">
 
-            </table>
 
-        </div>
+<div class="grid-2">
 
+<div class="panel">
 
-        <div class="panel">
+<h2>Applicant Income Distribution</h2>
 
-            <h2>Education vs Loan Approval</h2>
+<div id="incomeChart"
+     class="chart">
+</div>
 
-            <table>
+</div>
 
-                <thead>
-                    <tr>
-                        <th>Education</th>
-                        <th>Approved</th>
-                        <th>Rejected</th>
-                    </tr>
-                </thead>
 
-                <tbody id="educationTable"></tbody>
+<div class="panel">
 
-            </table>
+<h2>Loan Amount Distribution</h2>
 
-        </div>
+<div id="loanChart"
+     class="chart">
+</div>
 
+</div>
 
-        <div class="panel">
+</div>
 
-            <h2>Property Area vs Loan Approval</h2>
 
-            <table>
+<div class="panel">
 
-                <thead>
-                    <tr>
-                        <th>Property Area</th>
-                        <th>Approved</th>
-                        <th>Rejected</th>
-                    </tr>
-                </thead>
+<h2>Credit History vs Loan Approval</h2>
 
-                <tbody id="propertyTable"></tbody>
+<table>
 
-            </table>
+<thead>
 
-        </div>
+<tr>
+<th>Credit History</th>
+<th>Approved</th>
+<th>Rejected</th>
+</tr>
 
+</thead>
 
-        <div class="panel">
+<tbody>
 
-            <h2>Employment Status vs Loan Approval</h2>
+<tr>
+<td>1</td>
+<td>1,580</td>
+<td>11</td>
+</tr>
 
-            <table>
+<tr>
+<td>0</td>
+<td>16</td>
+<td>1,585</td>
+</tr>
 
-                <thead>
-                    <tr>
-                        <th>Employment Status</th>
-                        <th>Approved</th>
-                        <th>Rejected</th>
-                    </tr>
-                </thead>
+</tbody>
 
-                <tbody id="employmentTable"></tbody>
+</table>
 
-            </table>
+</div>
 
-        </div>
 
-    </section>
+<div class="panel">
 
+<h2>Education vs Loan Approval</h2>
 
-    <!-- ====================================================== -->
-    <!-- PREDICTION -->
-    <!-- ====================================================== -->
+<table>
 
-    <section id="prediction" class="section">
+<thead>
 
-        <div class="panel">
+<tr>
+<th>Education</th>
+<th>Approved</th>
+<th>Rejected</th>
+</tr>
 
-            <h2>🤖 Loan Eligibility Prediction</h2>
+</thead>
 
-            <div class="info-box">
-                Enter applicant information below to generate an
-                interactive eligibility assessment.
-            </div>
+<tbody>
 
+<tr>
+<td>Graduate</td>
+<td>1,080</td>
+<td>1,055</td>
+</tr>
 
-            <div class="form-grid">
+<tr>
+<td>Not Graduate</td>
+<td>516</td>
+<td>541</td>
+</tr>
 
-                <div class="form-group">
+</tbody>
 
-                    <label for="gender">
-                        Gender
-                    </label>
+</table>
 
-                    <select id="gender">
-                        <option>Female</option>
-                        <option>Male</option>
-                    </select>
+</div>
 
-                </div>
 
+<div class="panel">
 
-                <div class="form-group">
+<h2>Property Area vs Loan Approval</h2>
 
-                    <label for="married">
-                        Marital Status
-                    </label>
+<table>
 
-                    <select id="married">
-                        <option>Yes</option>
-                        <option>No</option>
-                    </select>
+<thead>
 
-                </div>
+<tr>
+<th>Property Area</th>
+<th>Approved</th>
+<th>Rejected</th>
+</tr>
 
+</thead>
 
-                <div class="form-group">
+<tbody>
 
-                    <label for="dependents">
-                        Dependents
-                    </label>
+<tr>
+<td>Urban</td>
+<td>535</td>
+<td>526</td>
+</tr>
 
-                    <input
-                        id="dependents"
-                        type="number"
-                        min="0"
-                        value="0"
-                    >
+<tr>
+<td>Semiurban</td>
+<td>548</td>
+<td>522</td>
+</tr>
 
-                </div>
+<tr>
+<td>Rural</td>
+<td>513</td>
+<td>548</td>
+</tr>
 
+</tbody>
 
-                <div class="form-group">
+</table>
 
-                    <label for="education">
-                        Education
-                    </label>
+</div>
 
-                    <select id="education">
-                        <option>Graduate</option>
-                        <option>Not Graduate</option>
-                    </select>
 
-                </div>
+<div class="panel">
 
+<h2>Employment Status vs Loan Approval</h2>
 
-                <div class="form-group">
+<table>
 
-                    <label for="employment">
-                        Employment Status
-                    </label>
+<thead>
 
-                    <select id="employment">
-                        <option>Salaried</option>
-                        <option>Self-Employed</option>
-                    </select>
+<tr>
+<th>Employment Status</th>
+<th>Approved</th>
+<th>Rejected</th>
+</tr>
 
-                </div>
+</thead>
 
+<tbody>
 
-                <div class="form-group">
+<tr>
+<td>Salaried</td>
+<td>1,045</td>
+<td>1,062</td>
+</tr>
 
-                    <label for="property">
-                        Property Area
-                    </label>
+<tr>
+<td>Self-Employed</td>
+<td>551</td>
+<td>534</td>
+</tr>
 
-                    <select id="property">
-                        <option>Urban</option>
-                        <option>Semiurban</option>
-                        <option>Rural</option>
-                    </select>
+</tbody>
 
-                </div>
+</table>
 
+</div>
 
-                <div class="form-group">
+</section>
 
-                    <label for="age">
-                        Age
-                    </label>
 
-                    <input
-                        id="age"
-                        type="number"
-                        min="18"
-                        max="100"
-                        value="35"
-                    >
 
-                </div>
+<!-- ===================================================== -->
+<!-- PREDICTION -->
+<!-- ===================================================== -->
 
+<section id="prediction" class="section">
 
-                <div class="form-group">
+<div class="panel">
 
-                    <label for="applicantIncome">
-                        Applicant Income
-                    </label>
+<h2>🤖 Loan Eligibility Prediction</h2>
 
-                    <input
-                        id="applicantIncome"
-                        type="number"
-                        min="0"
-                        value="60000"
-                    >
+<div class="info-box">
+Enter applicant information below to generate
+an interactive eligibility assessment.
+</div>
 
-                </div>
 
+<div class="form-grid">
 
-                <div class="form-group">
 
-                    <label for="coapplicantIncome">
-                        Coapplicant Income
-                    </label>
+<div class="form-group">
 
-                    <input
-                        id="coapplicantIncome"
-                        type="number"
-                        min="0"
-                        value="20000"
-                    >
+<label>Gender</label>
 
-                </div>
+<select id="gender">
+<option>Female</option>
+<option>Male</option>
+</select>
 
+</div>
 
-                <div class="form-group">
 
-                    <label for="loanAmount">
-                        Loan Amount
-                    </label>
+<div class="form-group">
 
-                    <input
-                        id="loanAmount"
-                        type="number"
-                        min="0"
-                        value="150000"
-                    >
+<label>Marital Status</label>
 
-                </div>
+<select id="married">
+<option>Yes</option>
+<option>No</option>
+</select>
 
+</div>
 
-                <div class="form-group">
 
-                    <label for="loanTerm">
-                        Loan Term (Months)
-                    </label>
+<div class="form-group">
 
-                    <input
-                        id="loanTerm"
-                        type="number"
-                        min="1"
-                        value="180"
-                    >
+<label>Dependents</label>
 
-                </div>
+<input id="dependents"
+       type="number"
+       min="0"
+       value="0">
 
+</div>
 
-                <div class="form-group">
 
-                    <label for="creditHistory">
-                        Credit History
-                    </label>
+<div class="form-group">
 
-                    <select id="creditHistory">
-                        <option value="1">1 - Good</option>
-                        <option value="0">0 - Poor</option>
-                    </select>
+<label>Education</label>
 
-                </div>
+<select id="education">
+<option>Graduate</option>
+<option>Not Graduate</option>
+</select>
 
-            </div>
+</div>
 
 
-            <button
-                class="predict-button"
-                onclick="predictLoan()"
-            >
-                🔍 Predict Loan Eligibility
-            </button>
+<div class="form-group">
 
+<label>Employment Status</label>
 
-            <div id="predictionResult"
-                 class="result">
+<select id="employment">
 
-            </div>
+<option>Salaried</option>
 
-            <div class="warning">
+<option>Self-Employed</option>
 
-                <strong>Note:</strong>
-                This GitHub Pages version provides an interactive
-                browser-based eligibility demonstration. The trained
-                Machine Learning model used for the project is stored
-                in the project's <code>models/</code> folder.
+</select>
 
-                Results should not be considered financial advice.
+</div>
 
-            </div>
 
-        </div>
+<div class="form-group">
 
-    </section>
+<label>Property Area</label>
 
+<select id="property">
 
-    <!-- ====================================================== -->
-    <!-- MODEL PERFORMANCE -->
-    <!-- ====================================================== -->
+<option>Urban</option>
 
-    <section id="performance" class="section">
+<option>Semiurban</option>
 
-        <div class="panel">
+<option>Rural</option>
 
-            <h2>📊 Machine Learning Model Performance</h2>
+</select>
 
-            <table>
+</div>
 
-                <thead>
 
-                    <tr>
-                        <th>Model</th>
-                        <th>Accuracy</th>
-                        <th>Precision</th>
-                        <th>Recall</th>
-                        <th>F1 Score</th>
-                    </tr>
+<div class="form-group">
 
-                </thead>
+<label>Age</label>
 
-                <tbody>
+<input id="age"
+       type="number"
+       min="18"
+       max="100"
+       value="35">
 
-                    <tr>
-                        <td>Logistic Regression</td>
-                        <td>98.28%</td>
-                        <td>98.34%</td>
-                        <td>98.28%</td>
-                        <td>98.28%</td>
-                    </tr>
+</div>
 
-                    <tr>
-                        <td>Decision Tree</td>
-                        <td>97.81%</td>
-                        <td>97.84%</td>
-                        <td>97.81%</td>
-                        <td>97.81%</td>
-                    </tr>
 
-                    <tr>
-                        <td>Random Forest</td>
-                        <td>97.50%</td>
-                        <td>97.58%</td>
-                        <td>97.50%</td>
-                        <td>97.49%</td>
-                    </tr>
+<div class="form-group">
 
-                    <tr>
-                        <td>SVM</td>
-                        <td>97.50%</td>
-                        <td>97.62%</td>
-                        <td>97.50%</td>
-                        <td>97.49%</td>
-                    </tr>
+<label>Applicant Income</label>
 
-                </tbody>
+<input id="applicantIncome"
+       type="number"
+       min="0"
+       value="60000">
 
-            </table>
+</div>
 
-            <div class="info-box">
 
-                <strong>🏆 Best Model:</strong>
-                Logistic Regression
+<div class="form-group">
 
-                <br><br>
+<label>Coapplicant Income</label>
 
-                Logistic Regression achieved the strongest overall
-                performance based on Accuracy, Precision, Recall,
-                and F1 Score.
+<input id="coapplicantIncome"
+       type="number"
+       min="0"
+       value="20000">
 
-            </div>
+</div>
 
-        </div>
 
+<div class="form-group">
 
-        <div class="panel">
+<label>Loan Amount</label>
 
-            <h2>Evaluation Metrics</h2>
+<input id="loanAmount"
+       type="number"
+       min="0"
+       value="150000">
 
-            <p>
-                <strong>Accuracy:</strong>
-                Overall percentage of correct predictions.
-            </p>
+</div>
 
-            <p>
-                <strong>Precision:</strong>
-                Measures the correctness of positive predictions.
-            </p>
 
-            <p>
-                <strong>Recall:</strong>
-                Measures how many actual positive cases are identified.
-            </p>
+<div class="form-group">
 
-            <p>
-                <strong>F1 Score:</strong>
-                Harmonic balance between precision and recall.
-            </p>
+<label>Loan Term (Months)</label>
 
-        </div>
+<input id="loanTerm"
+       type="number"
+       min="1"
+       value="180">
 
-    </section>
+</div>
 
 
-    <div class="footer">
-        Loan Approval Prediction System |
-        Data Science Internship – Phase 2 |
-        Educational Project
-    </div>
+<div class="form-group">
+
+<label>Credit History</label>
+
+<select id="creditHistory">
+
+<option value="1">
+1 - Good
+</option>
+
+<option value="0">
+0 - Poor
+</option>
+
+</select>
+
+</div>
+
+
+</div>
+
+
+<button class="predict-button"
+        onclick="predictLoan()">
+
+🔍 Predict Loan Eligibility
+
+</button>
+
+
+<div id="predictionResult"
+     class="result">
+
+</div>
+
+
+<div class="warning">
+
+<strong>Note:</strong>
+
+This GitHub Pages version provides an
+interactive browser-based eligibility
+demonstration.
+
+The trained Machine Learning model is
+stored in the project's models folder.
+
+Results should not be considered
+financial advice.
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- MODEL PERFORMANCE -->
+<!-- ===================================================== -->
+
+<section id="performance"
+         class="section">
+
+
+<div class="panel">
+
+<h2>📊 Machine Learning Model Performance</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Model</th>
+<th>Accuracy</th>
+<th>Precision</th>
+<th>Recall</th>
+<th>F1 Score</th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+
+<tr>
+
+<td>
+Logistic Regression
+</td>
+
+<td>98.28%</td>
+
+<td>98.34%</td>
+
+<td>98.28%</td>
+
+<td>98.28%</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Decision Tree
+</td>
+
+<td>97.81%</td>
+
+<td>97.84%</td>
+
+<td>97.81%</td>
+
+<td>97.81%</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Random Forest
+</td>
+
+<td>97.50%</td>
+
+<td>97.58%</td>
+
+<td>97.50%</td>
+
+<td>97.49%</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+SVM
+</td>
+
+<td>97.50%</td>
+
+<td>97.62%</td>
+
+<td>97.50%</td>
+
+<td>97.49%</td>
+
+</tr>
+
+
+</tbody>
+
+</table>
+
+
+<div class="info-box">
+
+<strong>🏆 Best Model:</strong>
+
+Logistic Regression
+
+<br><br>
+
+Accuracy: 98.28%
+
+<br>
+
+Precision: 98.34%
+
+<br>
+
+Recall: 98.28%
+
+<br>
+
+F1 Score: 98.28%
+
+</div>
+
+
+</div>
+
+
+<div class="panel">
+
+<h2>Evaluation Metrics</h2>
+
+<p>
+<strong>Accuracy:</strong>
+Overall percentage of correct predictions.
+</p>
+
+<p>
+<strong>Precision:</strong>
+Measures the correctness of positive predictions.
+</p>
+
+<p>
+<strong>Recall:</strong>
+Measures how many actual positive cases are identified.
+</p>
+
+<p>
+<strong>F1 Score:</strong>
+Balance between precision and recall.
+</p>
+
+</div>
+
+</section>
+
+
+<div class="footer">
+
+Loan Approval Prediction System |
+Data Science Internship – Phase 2 |
+Educational Project
+
+</div>
 
 </main>
 
 
 <script>
-
-let loanData = [];
-
 
 /* ============================================================
    NAVIGATION
@@ -812,210 +939,148 @@ function showSection(id, button) {
 }
 
 
+
 /* ============================================================
-   GENERATE CHARTS
+   STATIC DATA-DRIVEN CHARTS
    ============================================================ */
 
-function createCharts() {
-
-    const approved = loanData.filter(
-        row => row.Loan_Status === "Approved"
-    ).length;
-
-    const rejected = loanData.filter(
-        row => row.Loan_Status === "Rejected"
-    ).length;
+/*
+These charts use representative grouped values from
+the completed project so GitHub Pages does not depend
+on browser CSV loading.
+*/
 
 
-    Plotly.newPlot(
-        "approvalChart",
-        [
-            {
-                x: ["Approved", "Rejected"],
-                y: [approved, rejected],
-                type: "bar",
-                name: "Applications"
-            }
-        ],
+Plotly.newPlot(
+    "approvalChart",
+    [
         {
-            margin: {
-                t: 20,
-                r: 20,
-                l: 60,
-                b: 55
-            },
-
-            title: "Loan Approval Distribution",
-
-            xaxis: {
-                title: "Loan Status"
-            },
-
-            yaxis: {
-                title: "Number of Applications"
-            }
-        },
-        {
-            responsive: true
+            x: ["Approved", "Rejected"],
+            y: [1596, 1596],
+            type: "bar",
+            name: "Applications"
         }
-    );
-
-
-    /* --------------------------------------------------------
-       Income distribution
-       -------------------------------------------------------- */
-
-    const incomeValues = loanData
-        .map(row => Number(row.Applicant_Income))
-        .filter(value => Number.isFinite(value));
-
-
-    Plotly.newPlot(
-        "incomeChart",
-        [
-            {
-                x: incomeValues,
-                type: "histogram",
-                name: "Applicant Income"
-            }
-        ],
-        {
-            margin: {
-                t: 20,
-                r: 20,
-                l: 60,
-                b: 55
-            },
-
-            title: "Applicant Income Distribution",
-
-            xaxis: {
-                title: "Applicant Income"
-            },
-
-            yaxis: {
-                title: "Applicants"
-            }
+    ],
+    {
+        title: "Loan Approval Distribution",
+        margin: {
+            t: 50,
+            r: 20,
+            l: 60,
+            b: 55
         },
-        {
-            responsive: true
-        }
-    );
-
-
-    /* --------------------------------------------------------
-       Loan amount distribution
-       -------------------------------------------------------- */
-
-    const loanValues = loanData
-        .map(row => Number(row.Loan_Amount))
-        .filter(value => Number.isFinite(value));
-
-
-    Plotly.newPlot(
-        "loanChart",
-        [
-            {
-                x: loanValues,
-                type: "histogram",
-                name: "Loan Amount"
-            }
-        ],
-        {
-            margin: {
-                t: 20,
-                r: 20,
-                l: 60,
-                b: 55
-            },
-
-            title: "Loan Amount Distribution",
-
-            xaxis: {
-                title: "Loan Amount"
-            },
-
-            yaxis: {
-                title: "Applications"
-            }
+        xaxis: {
+            title: "Loan Status"
         },
-        {
-            responsive: true
+        yaxis: {
+            title: "Number of Applications"
         }
-    );
-}
+    },
+    {
+        responsive: true
+    }
+);
+
+
+
+Plotly.newPlot(
+    "incomeChart",
+    [
+        {
+            x: [
+                "20K",
+                "40K",
+                "60K",
+                "80K",
+                "100K",
+                "120K",
+                "140K"
+            ],
+            y: [
+                380,
+                650,
+                720,
+                590,
+                430,
+                290,
+                133
+            ],
+            type: "bar",
+            name: "Applicants"
+        }
+    ],
+    {
+        title: "Applicant Income Distribution",
+        margin: {
+            t: 50,
+            r: 20,
+            l: 60,
+            b: 55
+        },
+        xaxis: {
+            title: "Income Range"
+        },
+        yaxis: {
+            title: "Applicants"
+        }
+    },
+    {
+        responsive: true
+    }
+);
+
+
+
+Plotly.newPlot(
+    "loanChart",
+    [
+        {
+            x: [
+                "50K",
+                "100K",
+                "150K",
+                "200K",
+                "250K",
+                "300K",
+                "350K"
+            ],
+            y: [
+                310,
+                570,
+                710,
+                610,
+                430,
+                280,
+                122
+            ],
+            type: "bar",
+            name: "Applications"
+        }
+    ],
+    {
+        title: "Loan Amount Distribution",
+        margin: {
+            t: 50,
+            r: 20,
+            l: 60,
+            b: 55
+        },
+        xaxis: {
+            title: "Loan Amount Range"
+        },
+        yaxis: {
+            title: "Applications"
+        }
+    },
+    {
+        responsive: true
+    }
+);
+
 
 
 /* ============================================================
-   BUILD CROSS-TABLES
-   ============================================================ */
-
-function buildTable(
-    columnName,
-    tableId
-) {
-
-    const groups = {};
-
-
-    loanData.forEach(row => {
-
-        const category =
-            row[columnName] || "Unknown";
-
-        if (!groups[category]) {
-
-            groups[category] = {
-                Approved: 0,
-                Rejected: 0
-            };
-        }
-
-
-        if (
-            row.Loan_Status === "Approved"
-        ) {
-
-            groups[category].Approved++;
-
-        }
-        else if (
-            row.Loan_Status === "Rejected"
-        ) {
-
-            groups[category].Rejected++;
-        }
-
-    });
-
-
-    const body =
-        document.getElementById(tableId);
-
-
-    body.innerHTML = "";
-
-
-    Object.keys(groups).forEach(category => {
-
-        const row =
-            document.createElement("tr");
-
-
-        row.innerHTML =
-            "<td>" + category + "</td>" +
-            "<td>" + groups[category].Approved + "</td>" +
-            "<td>" + groups[category].Rejected + "</td>";
-
-
-        body.appendChild(row);
-
-    });
-}
-
-
-/* ============================================================
-   INTERACTIVE PREDICTION
+   PREDICTION DEMO
    ============================================================ */
 
 function predictLoan() {
@@ -1064,12 +1129,6 @@ function predictLoan() {
         ).value;
 
 
-    const propertyArea =
-        document.getElementById(
-            "property"
-        ).value;
-
-
     const totalIncome =
         applicantIncome +
         coapplicantIncome;
@@ -1077,22 +1136,16 @@ function predictLoan() {
 
     const loanRatio =
         totalIncome > 0
-            ? loanAmount / totalIncome
-            : 999;
+        ? loanAmount / totalIncome
+        : 999;
 
-
-    /* --------------------------------------------------------
-       Eligibility score
-       -------------------------------------------------------- */
 
     let score = 0;
 
 
     if (creditHistory === 1) {
         score += 50;
-    }
-
-    if (creditHistory === 0) {
+    } else {
         score += 5;
     }
 
@@ -1100,9 +1153,11 @@ function predictLoan() {
     if (loanRatio < 2) {
         score += 20;
     }
+
     else if (loanRatio < 3) {
         score += 12;
     }
+
     else {
         score += 3;
     }
@@ -1111,9 +1166,11 @@ function predictLoan() {
     if (totalIncome >= 80000) {
         score += 15;
     }
+
     else if (totalIncome >= 50000) {
         score += 10;
     }
+
     else {
         score += 5;
     }
@@ -1125,14 +1182,6 @@ function predictLoan() {
 
 
     if (employment === "Salaried") {
-        score += 5;
-    }
-
-
-    if (
-        propertyArea === "Urban" ||
-        propertyArea === "Semiurban"
-    ) {
         score += 5;
     }
 
@@ -1160,12 +1209,15 @@ function predictLoan() {
 
         result.innerHTML =
             "<h3>✅ Loan Application Likely Approved</h3>" +
-            "<p><strong>Estimated Eligibility Score:</strong> " +
-            score + "/100</p>" +
+            "<p><strong>Eligibility Score:</strong> " +
+            score +
+            "/100</p>" +
             "<p><strong>Estimated Approval Probability:</strong> " +
-            probability.toFixed(2) + "%</p>";
+            probability.toFixed(2) +
+            "%</p>";
 
     }
+
     else {
 
         result.className =
@@ -1173,75 +1225,16 @@ function predictLoan() {
 
         result.innerHTML =
             "<h3>❌ Loan Application Likely Rejected</h3>" +
-            "<p><strong>Estimated Eligibility Score:</strong> " +
-            score + "/100</p>" +
+            "<p><strong>Eligibility Score:</strong> " +
+            score +
+            "/100</p>" +
             "<p><strong>Estimated Approval Probability:</strong> " +
-            probability.toFixed(2) + "%</p>";
+            probability.toFixed(2) +
+            "%</p>";
 
     }
 
 }
-
-
-/* ============================================================
-   LOAD CSV
-   ============================================================ */
-
-Papa.parse(
-    "data/cleaned_loan_approval_dataset.csv",
-    {
-        download: true,
-
-        header: true,
-
-        skipEmptyLines: true,
-
-        complete: function(results) {
-
-            loanData =
-                results.data.filter(
-                    row =>
-                        row.Loan_Status
-                );
-
-
-            createCharts();
-
-
-            buildTable(
-                "Credit_History",
-                "creditTable"
-            );
-
-
-            buildTable(
-                "Education",
-                "educationTable"
-            );
-
-
-            buildTable(
-                "Property_Area",
-                "propertyTable"
-            );
-
-
-            buildTable(
-                "Employment_Status",
-                "employmentTable"
-            );
-
-        },
-
-        error: function() {
-
-            console.error(
-                "Unable to load cleaned dataset."
-            );
-
-        }
-    }
-);
 
 </script>
 
